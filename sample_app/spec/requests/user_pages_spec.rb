@@ -93,7 +93,7 @@ describe "User Pages" do
         fill_in "Name",       with: "Example User"
         fill_in "Email",      with: "user@example.com"
         fill_in "Password",   with: "foobar"
-        fill_in "Confirmation", with: "foobar"
+        fill_in "Confirm Password", with: "foobar"
       end
       
       # Test that valid information will create a user
@@ -145,6 +145,18 @@ describe "User Pages" do
       it { should have_link('Sign out', href: signout_path) }
       specify { user.reload.name.should == new_name }
       specify { user.reload.email.should == new_email }
+    end
+  end
+  
+  describe "users" do
+    describe "when admin tries to destroy self" do
+      let(:admin) { FactoryGirl.create(:admin) }
+      before do
+        sign_in admin
+        click_link "Users"
+      end
+      
+      it { should_not have_link('delete', href: user_path(admin)) }
     end
   end
 end

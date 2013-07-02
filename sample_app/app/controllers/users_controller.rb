@@ -8,7 +8,11 @@ class UsersController < ApplicationController
   end
 
   def new
-    @user = User.new
+    if signed_in?
+      redirect_to root_url
+    else
+      @user = User.new
+    end
   end
   
   def index
@@ -16,13 +20,17 @@ class UsersController < ApplicationController
   end
   
   def create
-    @user = User.new(params[:user])
-    if @user.save
-      sign_in @user
-      flash[:success] = "Welcome to the Sample App!"
-      redirect_to @user
+    if signed_in?
+      redirect_to root_url
     else
-      render 'new'
+      @user = User.new(params[:user])
+      if @user.save
+        sign_in @user
+        flash[:success] = "Welcome to the Sample App!"
+        redirect_to @user
+      else
+        render 'new'
+      end
     end
   end
   
@@ -42,9 +50,16 @@ class UsersController < ApplicationController
   end
   
   def destroy
-    User.find(params[:id]).destroy
-    flash[:success] = "User destroyed."
-    redirect_to users_url
+    # Already before filtered for admin so we only check if user is self
+    @user = User.find(params[:id])
+    if current_user?(@user)
+      flash[:error] = "You tried to destroy yourself. Perhaps you should seek counseling."
+      redirect_to users_url
+    else
+      @user.destroy
+      flash[:success] = "User destroyed."
+      redirect_to users_url
+    end
   end
   
   private
