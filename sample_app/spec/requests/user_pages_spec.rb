@@ -60,11 +60,20 @@ describe "User Pages" do
 
   # Test that the user page displays correct h1 and title
   describe "profile page" do
-    let(:user) { FactoryGirl.create(:user) }  
+    let(:user) { FactoryGirl.create(:user) } 
+    let!(:m1) { FactoryGirl.create(:micropost, user: user, content: "Foo") }
+    let!(:m2) { FactoryGirl.create(:micropost, user: user, content: "Bar") }
+    
     before{ visit user_path(user) }
     
     it { should have_selector('h1',     text: user.name) }
     it { should have_selector('title',  text: user.name) }
+    
+    describe "microposts" do
+      it { should have_content(m1.content) }
+      it { should have_content(m2.content) }
+      it { should have_content(user.microposts.count) }
+    end
   end
 
   # Tests for sign up functionality  
@@ -153,10 +162,15 @@ describe "User Pages" do
       let(:admin) { FactoryGirl.create(:admin) }
       before do
         sign_in admin
-        click_link "Users"
       end
-      
+
+      # Test that there isn't a delete link by the admin's name
       it { should_not have_link('delete', href: user_path(admin)) }
+
+      # Test that even w/o a link, a delete request will not succeed
+      it "should not let the admin delete self" do
+        expect { delete user_path(admin) }.not_to change(User, :count)
+      end
     end
   end
 end
