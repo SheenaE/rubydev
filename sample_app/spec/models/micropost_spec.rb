@@ -6,6 +6,9 @@ describe Micropost do
   before { @micropost = user.microposts.build(content: "Lorem ipsum") }
 
   subject { @micropost }
+
+# profile all the specs in this block
+profile :file => STDOUT, :printer => :flat do # profile examples
   
   it { should respond_to(:content) }
   it { should respond_to(:user_id) }
@@ -13,6 +16,11 @@ describe Micropost do
   its(:user) { should == user }
   
   it { should be_valid }
+
+  
+  it "should be valid" do
+    subject.should be_valid
+  end
   
   describe "accessible attributes" do
     it "should not allow access to user_id" do
@@ -32,9 +40,15 @@ describe Micropost do
     it { should_not be_valid }
   end
   
+end
+# end of profiling block!
+  
+  
   # Test that content does not exced 140 characters
   describe "with content that is too long" do
     before { @micropost.content = "a" * 141 }
     it { should_not be_valid }
   end
+  
+    
 end
